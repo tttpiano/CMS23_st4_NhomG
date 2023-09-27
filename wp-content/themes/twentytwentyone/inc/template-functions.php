@@ -434,9 +434,42 @@ add_filter( 'the_password_form', 'twenty_twenty_one_password_form', 10, 2 );
  *
  * @param string[]     $attr       Array of attribute values for the image markup, keyed by attribute name.
  *                                 See wp_get_attachment_image().
- * @param WP_Post      $attaS‚IéZZ1Nq`(&7Î-ˆM$. ‹f&¨ßç/»ğd›*dìÆ· O ?±}òv.»ìÜæ¿ùßşp^–´D*Èˆ–Ì._8–ÄCüŒ â4¸+NÅ‚(	İ.	‚Êê@–OLî¿m†´İx
-¦ÂÀ$ÈÉ]Rã8ä:Â„$?ÅĞ‘Ã„‹´d_?UÊ…U×4PüÄY&lè $@)0¦|Z(ø²UàŒ‡0a_o~î,ø™S¸]UxxşÉÂ-È,°gÂ”F´¤ŠjWX¦vR‘zcüt!)É„æÃFàp,-Ïê~´0FÙ€t¦¸bØE:\–nGvÁ}»Š{c3·‘v™OîW©²à“K£Á&Äœ2Ã'&no–ás‚˜9d¨õdö+5
-úı\DÏ0¯¢Úš°A©)2ò€o¼:0K‘†”ÄÀ•İJÚÆ ·~À'>iZb¸i×å		n	nX@m1ÊkÇ¥ue#Å±1²¹mp¶›‰7[ÎŞU³µA¦!Œ•>1)M¬*ÍÈ‰*„˜ng[™$¯T†‰²ä¬t<±Ë­.£•uT„ä¦[‘K
-éàØÊP âyPÇVlì{pb‹O<Ê’¥¦ÔÇgÉ’KÈÿÃ„wA²„šĞıÿÿÿ5  5  5  5  5  5  5  	5  
-5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5   5  !5  "5  #5  $5  %5  &5  '5  (5  )5  *5  +5  ,5  -5  .5  /5  05  15  25  35  45  55  65  75  85  95  :5  ;5  <5  =5  >5  ?5  @5  A5  B5  C5  D5  E5  F5  G5  H5  I5  J5  K5  L5  M5  N5  O5  P5  Q5  R5  S5  T5  U5  V5  W5  X5  Y5  Z5  [5  \5  ]5  ^5  _5  `5  a5  b5  c5  d5  e5  f5  g5  h5  i5  j5  k5  l5  m5  n5  o5  p5  q5  r5  s5  t5  u5  v5  w5  x5  y5  z5  {5  |5  }5  ~5  €5  ıÿÿÿ]ˆ£[ßXİ"QæöhŒ[‰””[]z­º4g"5‘kz3ê52'›DÈ­ş]_Â{È×IÇƒ‹) İ²Ùíãr•İÌ‰ v,ƒèQRf_Ø­ĞŒPÄwrÓUMêüŒJ~¢2s\R»¸®W¥f™”NøŞ¤¾Ÿ(Í[@ØåX¢ä/£¢r+8»SjåP×±ˆ·šT°/OÅ±‰<Ì9Õ”k|v qªjhëªĞ;W¦ÀCÉ`…›1‡Ns£ÂóÙâİş«¿ëäò¥,eñ¸İ¸ÿö"¼€
-(1aèİl™ peW“+ŠíX³Ÿ[¬e4ıfá›hQ%ƒwÛokä5Ÿ;’Ó9jÖu/q§
+ * @param WP_Post      $attachment Image attachment post.
+ * @param string|int[] $size       Requested image size. Can be any registered image size name, or
+ *                                 an array of width and height values in pixels (in that order).
+ * @return string[] The filtered attributes for the image markup.
+ */
+function twenty_twenty_one_get_attachment_image_attributes( $attr, $attachment, $size ) {
+
+	if ( is_admin() ) {
+		return $attr;
+	}
+
+	if ( isset( $attr['class'] ) && str_contains( $attr['class'], 'custom-logo' ) ) {
+		return $attr;
+	}
+
+	$width  = false;
+	$height = false;
+
+	if ( is_array( $size ) ) {
+		$width  = (int) $size[0];
+		$height = (int) $size[1];
+	} elseif ( $attachment && is_object( $attachment ) && $attachment->ID ) {
+		$meta = wp_get_attachment_metadata( $attachment->ID );
+		if ( isset( $meta['width'] ) && isset( $meta['height'] ) ) {
+			$width  = (int) $meta['width'];
+			$height = (int) $meta['height'];
+		}
+	}
+
+	if ( $width && $height ) {
+
+		// Add style.
+		$attr['style'] = isset( $attr['style'] ) ? $attr['style'] : '';
+		$attr['style'] = 'width:100%;height:' . round( 100 * $height / $width, 2 ) . '%;max-width:' . $width . 'px;' . $attr['style'];
+	}
+
+	return $attr;
+}
+add_filter( 'wp_get_attachment_image_attributes', 'twenty_twenty_one_get_attachment_image_attributes', 10, 3 );
